@@ -4,6 +4,7 @@ import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import ProfileView from '@/views/ProfileView.vue';
 import { useTokenStore } from '@/stores/tokenStore';
+import UpdateProfile from '@/views/UpdateProfile.vue';
 
 
 
@@ -30,7 +31,13 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
-      meta: { requiresAuth: true }, 
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/update-profile',
+      name: 'update-profile',
+      component: UpdateProfile,
+      meta: { requiresAuth: true },
     },
   ],
 });
