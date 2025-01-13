@@ -19,7 +19,20 @@ class CreateProfileResponse(BaseModel):
     user_id: int
     name: str
     interestedIn: List[str]  
-        
+
+
+class CreateSkillRequest(BaseModel):
+    name: str
+    level : int
+    priority : int
+    
+class CreateSkillResponse(BaseModel):
+    id:int
+    user_id: int
+    name: str
+    level : int
+    priority : int
+
 class Token(BaseModel):
     access_token: str
     token_type: str

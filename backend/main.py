@@ -209,6 +209,178 @@ async def delete_profile(
     return {"detail": "Profile deleted successfully"}
 
 
+@app.post("/skill", response_model=CreateSkillResponse)
+async def create_skill(
+    skill_data: CreateSkillRequest,
+    token: Annotated[str, Depends(oauth2_bearer)],
+    db: AsyncSession = Depends(get_db)
+):
+    # Check if the token is blacklisted
+    if token in token_blacklist:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked. Please log in again."
+        )
+    
+    # Get the current user using the provided token
+    current_user = await get_current_user(token, db)
+
+    # Validate that the user exists
+    user_query = await db.execute(select(Users).where(Users.id == current_user.id))
+    user = user_query.scalars().first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found."
+        )
+
+    # Create a new skill for the user
+    new_skill = Skill(
+        user_id=current_user.id,
+        name=skill_data.name,
+        level=skill_data.level,
+        priority=skill_data.priority
+    )
+
+    # Add the new skill to the database
+    db.add(new_skill)
+    await db.commit()
+    await db.refresh(new_skill)
+
+    # Return the created skill as a response
+    return CreateSkillResponse(
+        id=new_skill.id,
+        user_id=new_skill.user_id,
+        name=new_skill.name,
+        level=new_skill.level,
+        priority=new_skill.priority
+    )
+
+@app.get("/skill", response_model=List[CreateSkillResponse])
+async def get_skills(
+    token: Annotated[str, Depends(oauth2_bearer)],
+    db: AsyncSession = Depends(get_db)
+):
+    # Check if the token is blacklisted
+    if token in token_blacklist:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked. Please log in again."
+        )
+    
+    # Get the current user using the provided token
+    current_user = await get_current_user(token, db)
+
+    # Query all skills for the current user
+    skills_query = await db.execute(
+        select(Skill).where(Skill.user_id == current_user.id)
+    )
+    skills = skills_query.scalars().all()
+
+    if not skills:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No skills found for the current user."
+        )
+
+    # Return the skills as a response
+    return [
+        CreateSkillResponse(
+            id=skill.id,
+            user_id=skill.user_id,
+            name=skill.name,
+            level=skill.level,
+            priority=skill.priority
+        )
+        for skill in skills
+    ]
+
+
+@app.put("/skill/{skill_id}", response_model=CreateSkillResponse)
+async def update_skill(
+    skill_id: int,
+    skill_data: CreateSkillRequest,
+    token: Annotated[str, Depends(oauth2_bearer)],
+    db: AsyncSession = Depends(get_db)
+):
+    # Check if the token is blacklisted
+    if token in token_blacklist:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked. Please log in again."
+        )
+
+    # Get the current user using the provided token
+    current_user = await get_current_user(token, db)
+
+    # Fetch the skill to be updated
+    skill_query = await db.execute(
+        select(Skill).where(Skill.id == skill_id, Skill.user_id == current_user.id)
+    )
+    skill = skill_query.scalars().first()
+
+    if not skill:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Skill not found."
+        )
+
+    # Update the skill fields
+    skill.name = skill_data.name
+    skill.level = skill_data.level
+    skill.priority = skill_data.priority
+
+    # Commit the changes to the database
+    await db.commit()
+    await db.refresh(skill)
+
+    # Return the updated skill
+    return CreateSkillResponse(
+        id=skill.id,
+        user_id=skill.user_id,
+        name=skill.name,
+        level=skill.level,
+        priority=skill.priority
+    )
+
+
+@app.delete("/skill/{skill_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_skill(
+    skill_id: int,
+    token: Annotated[str, Depends(oauth2_bearer)],
+    db: AsyncSession = Depends(get_db)
+):
+    # Check if the token is blacklisted
+    if token in token_blacklist:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked. Please log in again."
+        )
+
+    # Get the current user using the provided token
+    current_user = await get_current_user(token, db)
+
+    # Fetch the skill to be deleted
+    skill_query = await db.execute(
+        select(Skill).where(Skill.id == skill_id, Skill.user_id == current_user.id)
+    )
+    skill = skill_query.scalars().first()
+
+    if not skill:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Skill not found."
+        )
+
+    # Delete the skill from the database
+    await db.delete(skill)
+    await db.commit()
+
+    # Return a 204 No Content response
+    return None
+
+
 # @app.get("/test")
 # async def test(
 #     token: Annotated[str, Depends(oauth2_bearer)],
