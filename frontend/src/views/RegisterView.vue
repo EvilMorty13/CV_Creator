@@ -1,23 +1,50 @@
-<!-- src/views/RegisterView.vue -->
 <template>
-  <div class="register-container">
-    <h2>Register</h2>
-    <form @submit.prevent="addUser">
-      <div class="input-group">
-        <label for="email">Email</label>
-        <input type="email" v-model="register.email" id="email" required />
-      </div>
-      <div class="input-group">
-        <label for="password">Password</label>
-        <input type="password" v-model="register.password" id="password" required />
-      </div>
-      <div class="input-group">
-        <label for="confirmPassword">Confirm Password</label>
-        <input type="password" v-model="register.confirmPassword" id="confirmPassword" required />
-      </div>
-      <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <router-link to="/">Login</router-link></p>
+  <div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+      <h2 class="text-2xl font-semibold text-center mb-6">Register</h2>
+      <form @submit.prevent="addUser">
+        <div class="input-group mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input
+            type="email"
+            v-model="register.email"
+            id="email"
+            required
+            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
+          />
+        </div>
+        <div class="input-group mb-4">
+          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+          <input
+            type="password"
+            v-model="register.password"
+            id="password"
+            required
+            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
+          />
+        </div>
+        <div class="input-group mb-6">
+          <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+          <input
+            type="password"
+            v-model="register.confirmPassword"
+            id="confirmPassword"
+            required
+            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
+          />
+        </div>
+        <button
+          type="submit"
+          class="w-full py-2 text-white bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
+        >
+          Register
+        </button>
+      </form>
+      <p class="mt-4 text-center text-sm">
+        Already have an account?
+        <router-link to="/" class="text-blue-500 hover:text-blue-700">Login</router-link>
+      </p>
+    </div>
   </div>
 </template>
 
@@ -41,7 +68,7 @@ const addUser = async () => {
   }
 
   try {
-    const response = await axios.post('/register', {
+    await axios.post('/register', {
       email: register.value.email,
       password: register.value.password,
     });
@@ -50,26 +77,8 @@ const addUser = async () => {
     alert('Registration successful!');
     router.push('/');
   } catch (error) {
-    console.error('Registration failed', error.response ? error.response.data : error);
+    console.error('Registration failed', error);
     alert('Registration failed, please try again.');
   }
 };
 </script>
-
-<style scoped>
-.register-container {
-  width: 300px;
-  margin: auto;
-  padding: 20px;
-}
-.input-group {
-  margin-bottom: 15px;
-}
-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-}
-</style>

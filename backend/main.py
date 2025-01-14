@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import asc
 from passlib.context import CryptContext
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
@@ -274,7 +275,9 @@ async def get_skills(
 
     # Query all skills for the current user
     skills_query = await db.execute(
-        select(Skill).where(Skill.user_id == current_user.id)
+        select(Skill)
+        .where(Skill.user_id == current_user.id)
+        .order_by(asc(Skill.priority))  
     )
     skills = skills_query.scalars().all()
 
